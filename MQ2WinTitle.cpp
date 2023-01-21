@@ -1,5 +1,7 @@
 #include <mq/Plugin.h>
 
+#include <iostream>
+
 PreSetup("MQ2WinTitle");
 PLUGIN_VERSION(1.0);
 
@@ -37,46 +39,6 @@ ULONGLONG InGameTimeStamp = 0LL;
 
 HWND EQWnd = nullptr;
 
-PLUGIN_API void WTDebug(SPAWNINFO* pChar, PCHAR Cmd);
-PLUGIN_API void PetDebug(SPAWNINFO* pChar, PCHAR Cmd);
-
-#include <iostream>
-#include <sstream>
-double compile_date()
-{
-	std::string datestr = __DATE__;
-	std::string timestr = __TIME__;
-
-	std::istringstream iss_date(datestr);
-	std::string str_month;
-	int day;
-	int year;
-	iss_date >> str_month >> day >> year;
-
-	int month;
-	if (str_month == "Jan") month = 1;
-	else if (str_month == "Feb") month = 2;
-	else if (str_month == "Mar") month = 3;
-	else if (str_month == "Apr") month = 4;
-	else if (str_month == "May") month = 5;
-	else if (str_month == "Jun") month = 6;
-	else if (str_month == "Jul") month = 7;
-	else if (str_month == "Aug") month = 8;
-	else if (str_month == "Sep") month = 9;
-	else if (str_month == "Oct") month = 10;
-	else if (str_month == "Nov") month = 11;
-	else if (str_month == "Dec") month = 12;
-	else return ((double)0.0);
-	/*
-	for (string::size_type pos = timestr.find(':'); pos != string::npos; pos = timestr.find(':', pos))
-		timestr[pos] = ' ';
-	istringstream iss_time(timestr);
-	int hour, min, sec;
-	iss_time >> hour >> min >> sec;
-	*/
-	return ((double)year + ((double)month / (double)100.0) + ((double)day / (double)10000.0));
-}
-
 BOOL CALLBACK EnumWndProc(HWND hWnd, LPARAM lParam)
 {
 	if (::IsWindowVisible(hWnd))
@@ -93,12 +55,13 @@ BOOL CALLBACK EnumWndProc(HWND hWnd, LPARAM lParam)
 			}
 		}
 	}
-	return TRUE;
+	return true;
 }
 
 HWND GetHwndFromPID(DWORD dwProcessId)
 {
-	DWORD pid, dwThreadID;
+	DWORD pid = 0;
+	DWORD dwThreadID = 0;
 	HWND h;
 	EQWnd = NULL;
 	__try {
@@ -117,7 +80,7 @@ HWND GetHwndFromPID(DWORD dwProcessId)
 		}
 	}
 	if (EQWnd) {
-		h = ::GetTopWindow(0);
+		h = ::GetTopWindow(nullptr);
 		while (h)
 		{
 			dwThreadID = ::GetWindowThreadProcessId(h, &pid);
@@ -139,6 +102,38 @@ HWND GetHwndFromPID(DWORD dwProcessId)
 		}
 	}
 	return(EQWnd);
+}
+
+PLUGIN_API void WTDebug(SPAWNINFO* pChar, char* Cmd)
+{
+	char zParm[MAX_STRING];
+	GetArg(zParm, Cmd, 1);
+	if (zParm[0] == 0)
+		WTDEBUG = !WTDEBUG;
+	else if (!_strnicmp(zParm, "on", 2))
+		WTDEBUG = true;
+	else if (!_strnicmp(zParm, "off", 2))
+		WTDEBUG = false;
+	else
+		WTDEBUG = !WTDEBUG;
+	WriteChatf("\ar%s\ax::\amDEBUGGING is now %s\ax.", mqplugin::PluginName, WTDEBUG ? "\aoON" : "\agOFF");
+	WritePrivateProfileString("Settings", "Debug", WTDEBUG ? "on" : "off", INIFileName);
+}
+
+PLUGIN_API void PetDebug(SPAWNINFO* pChar, char* Cmd)
+{
+	char zParm[MAX_STRING];
+	GetArg(zParm, Cmd, 1);
+	if (zParm[0] == 0)
+		PETDEBUG = !PETDEBUG;
+	else if (!_strnicmp(zParm, "on", 2))
+		PETDEBUG = true;
+	else if (!_strnicmp(zParm, "off", 2))
+		PETDEBUG = false;
+	else
+		PETDEBUG = !PETDEBUG;
+	WriteChatf("\ar%s\ax::\amOnIncomingChat pet tell debugging is now %s\ax.", mqplugin::PluginName, PETDEBUG ? "\aoON" : "\agOFF");
+	WritePrivateProfileString("Settings", "PetDebug", PETDEBUG ? "on" : "off", INIFileName);
 }
 
 void SetWinTitle(int GameState)
@@ -398,7 +393,7 @@ void SetWinTitle(int GameState)
 	*/
 }
 
-VOID ReloadConfig(PSPAWNINFO pSpawn, PCHAR szLine)
+void ReloadConfig(SPAWNINFO* pSpawn, const char* szLine)
 {
 	char szTemp[MAX_STRING] = { 0 };
 	GetPrivateProfileString("Settings", "InGame", INGAMESTRING, g_InGameString, MAX_STRING, INIFileName);
@@ -422,12 +417,11 @@ VOID ReloadConfig(PSPAWNINFO pSpawn, PCHAR szLine)
 		SetWinTitle(1000);
 }
 
-VOID FixTitleBar(PSPAWNINFO pSpawn, PCHAR szLine)
+void FixTitleBar(SPAWNINFO* pSpawn, const char* szLine)
 {
 	char zParm[MAX_STRING];
 	GetArg(zParm, szLine, 1);
-	int x = atoi(zParm);
-	SetWinTitle(x);
+	SetWinTitle(GetIntFromString(zParm, 0));
 }
 
 PLUGIN_API void InitializePlugin()
@@ -489,14 +483,14 @@ PLUGIN_API void OnPulse()
 	}
 }
 
-PLUGIN_API VOID OnBeginZone()
+PLUGIN_API void OnBeginZone()
 {
 	Zoning = true;
 	if (bBeenInGame)
 		SetWinTitle(GetGameState());
 }
 
-PLUGIN_API VOID SetGameState(DWORD GameState)
+PLUGIN_API void SetGameState(int GameState)
 {
 	if (GetGameState() == GAMESTATE_CHARSELECT || GetGameState() == GAMESTATE_INGAME)
 	{
@@ -521,10 +515,10 @@ PLUGIN_API void OnEndZone()
 	SetWinTitle(GetGameState());
 }
 
-PLUGIN_API DWORD OnIncomingChat(PCHAR tLine, DWORD Color)
+PLUGIN_API bool OnIncomingChat(const char* tLine, DWORD Color)
 {
 	if (!IsBackGround)
-		return 0;
+		return false;
 
 	if (strstr(tLine, "tells you, ") || strstr(tLine, "told you, "))
 	{
@@ -554,49 +548,17 @@ PLUGIN_API DWORD OnIncomingChat(PCHAR tLine, DWORD Color)
 			Line[NewPos] = 0;
 			char* nt;
 			char* Sender = strtok_s(Line, " ", &nt);
-			PSPAWNINFO MyPet = (PSPAWNINFO)GetSpawnByID(pCh->pSpawn->PetID);
+			SPAWNINFO* MyPet = GetSpawnByID(pCh->pSpawn->PetID);
 			if (PETDEBUG && MyPet)
-				WriteChatf("\ar%s\ax::\amRecieved: '%s'   Found: '%s'", mqplugin::PluginName, Sender, MyPet->DisplayedName);
+				WriteChatf("\ar%s\ax::\amReceived: '%s'   Found: '%s'", mqplugin::PluginName, Sender, MyPet->DisplayedName);
 			if (MyPet && (!strcmp(Sender, MyPet->DisplayedName) || !_strnicmp(pCh->Name, Sender, strlen(pCh->Name))))
 			{
-				return 0;
+				return false;
 			}
 		}
 		TellRecv = true;
 		if (bBeenInGame)
 			SetWinTitle(GetGameState());
 	}
-	return 0;
-}
-
-PLUGIN_API VOID WTDebug(PSPAWNINFO pChar, PCHAR Cmd)
-{
-	char zParm[MAX_STRING];
-	GetArg(zParm, Cmd, 1);
-	if (zParm[0] == 0)
-		WTDEBUG = !WTDEBUG;
-	else if (!_strnicmp(zParm, "on", 2))
-		WTDEBUG = true;
-	else if (!_strnicmp(zParm, "off", 2))
-		WTDEBUG = false;
-	else
-		WTDEBUG = !WTDEBUG;
-	WriteChatf("\ar%s\ax::\amDEBUGGING is now %s\ax.", mqplugin::PluginName, WTDEBUG ? "\aoON" : "\agOFF");
-	WritePrivateProfileString("Settings", "Debug", WTDEBUG ? "on" : "off", INIFileName);
-}
-
-PLUGIN_API VOID PetDebug(PSPAWNINFO pChar, PCHAR Cmd)
-{
-	char zParm[MAX_STRING];
-	GetArg(zParm, Cmd, 1);
-	if (zParm[0] == 0)
-		PETDEBUG = !PETDEBUG;
-	else if (!_strnicmp(zParm, "on", 2))
-		PETDEBUG = true;
-	else if (!_strnicmp(zParm, "off", 2))
-		PETDEBUG = false;
-	else
-		PETDEBUG = !PETDEBUG;
-	WriteChatf("\ar%s\ax::\amOnIncomingChat pet tell debugging is now %s\ax.", mqplugin::PluginName, PETDEBUG ? "\aoON" : "\agOFF");
-	WritePrivateProfileString("Settings", "PetDebug", PETDEBUG ? "on" : "off", INIFileName);
+	return false;
 }
