@@ -6,32 +6,35 @@ titlebar to user defined text.
 
 ## Getting Started
 
-```txt
+```
 /plugin MQ2WinTitle
 ```
 
 ### Commands
 
-MQ2WinTitle provides one command and several options for configuration:
+MQ2WinTitle provides one command:
 
-```txt
-/winload
+```
+/wintitle
 ```
 
-Forces immediate reload of the MQ2WinTitle.ini entries.
+<span style="color: blue;">/wintitle reload</span> : <span style="color: green;">Reload configuration from ini file</span>  
+<span style="color: blue;">/wintitle fixtitle [state]</span> : <span style="color: green;">Call function to 'fix' title based on game state</span>  
+<span style="color: blue;">/wintitle debug [off|on]</span> : <span style="color: green;">Toggle displaying debugging messages to chat, or force on/off</span>  
+<span style="color: blue;">/wintitle petdebug [off|on]</span> : <span style="color: green;">Toggle displaying pet debugging messages to chat, or force on/off</span>  
+<span style="color: blue;">/wintitle [help]</span> : <span style="color: green;">This help</span>
 
 ### Configuration File
 
-There is one section, titled: `[Settings]`
+There is one section: `[Settings]`
 
-InGame The titlebar format to use while in game (not zoning, foreground).  
-Tell The titlebar format to use if you recieve a tell while EQ is in the background.  
-Other The titlebar format to use at other times (such as char select).  
-Zoning The titlebar format to use while zoning.  
-ShowHotKey Whether to append the hotkey as shown by WinEQ2 or InnerSpace, if used.  
-KeepOriginalTitle Whether to append the MQ2WinTitle entry to the original title or not. If this is off, then any entry will overwrite the original title.  
+<span style="color: blue;">InGame</span> <span style="color: green;">The titlebar format to use while in game (not zoning, foreground).</span>  
+<span style="color: blue;">Tell</span> <span style="color: green;">The titlebar format to use if you recieve a tell while EQ is in the background.</span>  
+<span style="color: blue;">Other</span> <span style="color: green;">The titlebar format to use at other times (such as char select).</span>  
+<span style="color: blue;">Zoning</span> <span style="color: green;">The titlebar format to use while zoning.</span>  
+<span style="color: blue;">ShowHotKey</span> <span style="color: green;">Whether to append the hotkey as shown by WinEQ2 or InnerSpace, if used.</span>  
 
-The ShowHotKey entry is either on or off. All other entries are parsed as macro parameters
+The <span style="color: blue;">ShowHotKey</span> entry is either on or off. All other entries are parsed as macro parameters
 
 ## Authors
 

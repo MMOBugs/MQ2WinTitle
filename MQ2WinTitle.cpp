@@ -5,38 +5,17 @@
 PreSetup("MQ2WinTitle");
 PLUGIN_VERSION(1.0);
 
-bool WTDEBUG = false;
-bool PETDEBUG = false;
-
-char szLoginName[MAX_STRING] = { 0 };
-char zCharName[MAX_STRING] = { 0 };
-char szServerName[MAX_STRING] = { 0 };
-char szWindowTitle[MAX_STRING] = { 0 };
-
 #define OTHERSTRING " - ${MacroQuest.Server}" 
 #define INGAMESTRING " - ${Me.Name} ${Me.Surname} (${MacroQuest.Server}) - ${Zone.Name}"
 #define ZONINGSTRING " - ${Me.Name} ${Me.Surname} (${MacroQuest.Server}) - Zoning..."
 #define TELLSTRING " - * [${MacroQuest.LastTell}] ${Me.Name} ${Me.Surname} (${MacroQuest.Server}) - ${Zone.Name}"
 
-char g_ZoningString[MAX_STRING] = { 0 };
-char g_OtherString[MAX_STRING] = { 0 };
-char g_InGameString[MAX_STRING] = { 0 };
-char g_TellString[MAX_STRING] = { 0 };
-char g_HotKey[MAX_STRING] = { 0 };
-char g_OriginalTitle[MAX_STRING] = { 0 };
-char g_LastTitle[MAX_STRING] = { 0 };
-
-bool TellRecv = false;
-bool IsBackGround = false;
-bool Zoning = false;
-bool Init = false;
-bool ShowHotKey = true;
-bool KeepOriginalTitle = false;
-bool bBeenInGame = false;
-
-ULONGLONG TimeStamp = 0LL;
-ULONGLONG InGameTimeStamp = 0LL;
-
+bool WTDEBUG = false, PETDEBUG = false, TellRecv = false, IsBackGround = false, Zoning = false,
+	Init = false, ShowHotKey = true, KeepOriginalTitle = false, bBeenInGame = false;
+char szLoginName[MAX_STRING] = { 0 }, zCharName[MAX_STRING] = { 0 }, szServerName[MAX_STRING] = { 0 }, szWindowTitle[MAX_STRING] = { 0 },
+	g_ZoningString[MAX_STRING] = { 0 }, g_OtherString[MAX_STRING] = { 0 }, g_InGameString[MAX_STRING] = { 0 }, g_TellString[MAX_STRING] = { 0 },
+	g_HotKey[MAX_STRING] = { 0 }, g_OriginalTitle[MAX_STRING] = { 0 }, g_LastTitle[MAX_STRING] = { 0 };
+ULONGLONG TimeStamp = 0LL, InGameTimeStamp = 0LL;
 HWND EQWnd = nullptr;
 
 BOOL CALLBACK EnumWndProc(HWND hWnd, LPARAM lParam)
@@ -49,7 +28,8 @@ BOOL CALLBACK EnumWndProc(HWND hWnd, LPARAM lParam)
 		GetWindowThreadProcessId(hWnd, &wndPid);
 		if (szWnd[0])
 		{
-			if (wndPid == (DWORD)lParam) {
+			if (wndPid == (DWORD)lParam) 
+			{
 				EQWnd = hWnd;
 				return false;
 			}
@@ -60,26 +40,31 @@ BOOL CALLBACK EnumWndProc(HWND hWnd, LPARAM lParam)
 
 HWND GetHwndFromPID(DWORD dwProcessId)
 {
-	DWORD pid = 0;
-	DWORD dwThreadID = 0;
+	DWORD pid = 0, dwThreadID = 0;
 	HWND h;
 	EQWnd = NULL;
-	__try {
+	__try 
+	{
 		EnumWindows(EnumWndProc, dwProcessId);
 	}
-	__except (EXCEPTION_EXECUTE_HANDLER) {
+	__except (EXCEPTION_EXECUTE_HANDLER) 
+	{
 	}
-	if (WTDEBUG) {
-		if (EQWnd) {
+	if (WTDEBUG) 
+	{
+		if (EQWnd) 
+		{
 			DebugSpewAlways("%s::EQ Window found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, EQWnd);
 			WriteChatf("%s::EQ Window found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, EQWnd);
 		}
-		else {
+		else 
+		{
 			DebugSpewAlways("%s::EQ Window not found for PID %d", mqplugin::PluginName, dwProcessId);
 			WriteChatf("%s::EQ Window found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, EQWnd);
 		}
 	}
-	if (EQWnd) {
+	if (EQWnd) 
+	{
 		h = ::GetTopWindow(nullptr);
 		while (h)
 		{
@@ -90,12 +75,15 @@ HWND GetHwndFromPID(DWORD dwProcessId)
 			}
 			h = ::GetNextWindow(h, GW_HWNDNEXT);
 		}
-		if (WTDEBUG) {
-			if (dwThreadID) {
+		if (WTDEBUG) 
+		{
+			if (dwThreadID) 
+			{
 				DebugSpewAlways("%s::Thread found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, dwThreadID);
 				WriteChatf("%s::Thread found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, dwThreadID);
 			}
-			else {
+			else 
+			{
 				DebugSpewAlways("%s::Thread not found for PID %d", mqplugin::PluginName, dwProcessId);
 				WriteChatf("%s::Thread found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, dwThreadID);
 			}
@@ -104,7 +92,7 @@ HWND GetHwndFromPID(DWORD dwProcessId)
 	return(EQWnd);
 }
 
-PLUGIN_API void WTDebug(SPAWNINFO* pChar, char* Cmd)
+void WTDebug(const char* Cmd)
 {
 	char zParm[MAX_STRING];
 	GetArg(zParm, Cmd, 1);
@@ -120,7 +108,7 @@ PLUGIN_API void WTDebug(SPAWNINFO* pChar, char* Cmd)
 	WritePrivateProfileString("Settings", "Debug", WTDEBUG ? "on" : "off", INIFileName);
 }
 
-PLUGIN_API void PetDebug(SPAWNINFO* pChar, char* Cmd)
+void PetDebug(const char* Cmd)
 {
 	char zParm[MAX_STRING];
 	GetArg(zParm, Cmd, 1);
@@ -143,8 +131,10 @@ void SetWinTitle(int GameState)
 	PCHARINFO pCharInfo = GetCharInfo();
 	if (pCharInfo)
 		szSpawn = GetCharInfo()->pSpawn;
-	if (GameState != 2000) {
-		if (!Init) {
+	if (GameState != 2000) 
+	{
+		if (!Init) 
+		{
 			if (!GetPrivateProfileString("Settings", "InGame", NULL, g_InGameString, MAX_STRING, INIFileName))
 				WritePrivateProfileString("Settings", "InGame", INGAMESTRING, INIFileName);
 			if (!GetPrivateProfileString("Settings", "Tell", NULL, g_TellString, MAX_STRING, INIFileName))
@@ -155,8 +145,6 @@ void SetWinTitle(int GameState)
 				WritePrivateProfileString("Settings", "Other", OTHERSTRING, INIFileName);
 			if (!GetPrivateProfileString("Settings", "ShowHotKey", NULL, szTemp, MAX_STRING, INIFileName))
 				WritePrivateProfileString("Settings", "ShowHotKey", "on", INIFileName);
-			//if(!GetPrivateProfileString("Settings", "KeepOriginalTitle", NULL, szTemp, MAX_STRING, INIFileName))
-				//WritePrivateProfileString("Settings", "KeepOriginalTitle", "on", INIFileName); 
 			GetPrivateProfileString("Settings", "InGame", INGAMESTRING, g_InGameString, MAX_STRING, INIFileName);
 			GetPrivateProfileString("Settings", "Tell", TELLSTRING, g_TellString, MAX_STRING, INIFileName);
 			GetPrivateProfileString("Settings", "Zoning", ZONINGSTRING, g_ZoningString, MAX_STRING, INIFileName);
@@ -166,11 +154,6 @@ void SetWinTitle(int GameState)
 				ShowHotKey = true;
 			else
 				ShowHotKey = false;
-			//GetPrivateProfileString("Settings", "KeepOriginalTitle", "on", szTemp, MAX_STRING, INIFileName);
-			//if(!_stricmp(szTemp, "on"))
-				//KeepOriginalTitle = true;
-			//else
-				//KeepOriginalTitle = false;
 		}
 	}
 
@@ -180,18 +163,21 @@ void SetWinTitle(int GameState)
 	else
 		hwnd = EQWnd;
 
-	if (!hwnd) {
-		if (WTDEBUG) {
+	if (!hwnd) 
+	{
+		if (WTDEBUG) 
+		{
 			DebugSpewAlways("%s::!hwnd", mqplugin::PluginName);
 			WriteChatf("%s::!hwnd", mqplugin::PluginName);
 		}
 		return;
 	}
-	static bool ShownOnce = false;
-	static bool InitialSetupDone = false, InitialHKDone = false;
-	if (!InitialSetupDone && GameState == GAMESTATE_INGAME) { // (GameState==GAMESTATE_INGAME || GameState==GAMESTATE_CHARSELECT)) {
+	static bool ShownOnce = false, InitialSetupDone = false, InitialHKDone = false;
+	if (!InitialSetupDone && GameState == GAMESTATE_INGAME) 
+	{
 		::GetWindowTextA(hwnd, g_OriginalTitle, MAX_STRING - 1);
-		if (g_OriginalTitle[0]) {
+		if (g_OriginalTitle[0]) 
+		{
 			InitialSetupDone = true;
 			int pos = ci_find_substr(g_OriginalTitle, " (hotkey:");
 			if (pos != -1)
@@ -211,18 +197,21 @@ void SetWinTitle(int GameState)
 				}
 			}
 		}
-		else if (WTDEBUG) {
+		else if (WTDEBUG) 
+		{
 			DebugSpewAlways("%s::GetWindowText() failed.", mqplugin::PluginName);
 			WriteChatf("%s::GetWindowText() failed.", mqplugin::PluginName);
 		}
-		if (WTDEBUG && !ShownOnce) {
+		if (WTDEBUG && !ShownOnce) 
+		{
 			ShownOnce = true;
 			DebugSpewAlways("%s::g_OriginalTitle='%s'", mqplugin::PluginName, g_OriginalTitle);
 			WriteChatf("%s::g_OriginalTitle='%s'", mqplugin::PluginName, g_OriginalTitle);
 		}
 	}
 	// Verify hotkey is set, might not want to verify g_HotKey[0], and just let it update, but for now, will check it - htw
-	if (ShowHotKey && hwnd && !g_HotKey[0]) {
+	if (ShowHotKey && hwnd && !g_HotKey[0]) 
+	{
 		char szTempTitle[MAX_STRING] = { 0 };
 		::GetWindowTextA(hwnd, szTempTitle, MAX_STRING - 1);
 		if (szTempTitle[0])
@@ -242,12 +231,13 @@ void SetWinTitle(int GameState)
 			}
 		}
 	}
-
-
-	if (!InitialHKDone && GameState == GAMESTATE_INGAME) { // && (GameState==GAMESTATE_INGAME || GameState==GAMESTATE_CHARSELECT)) {
-		if (strlen(g_OriginalTitle) > 1 && ci_find_substr(g_OriginalTitle, "(Hotkey: ") != -1 && ci_find_substr(g_OriginalTitle, "+") != -1 && ci_find_substr(g_OriginalTitle, ")") != -1) {
+	if (!InitialHKDone && GameState == GAMESTATE_INGAME) 
+	{
+		if (strlen(g_OriginalTitle) > 1 && ci_find_substr(g_OriginalTitle, "(Hotkey: ") != -1 && ci_find_substr(g_OriginalTitle, "+") != -1 && ci_find_substr(g_OriginalTitle, ")") != -1) 
+		{
 			InitialHKDone = true;
-			if (ShowHotKey) {
+			if (ShowHotKey) 
+			{
 				const int pos = ci_find_substr(g_OriginalTitle, "(Hotkey: ");
 				if (pos != -1)
 				{
@@ -261,7 +251,8 @@ void SetWinTitle(int GameState)
 						}
 					}
 				}
-				if (WTDEBUG) {
+				if (WTDEBUG) 
+				{
 					DebugSpewAlways("%s::g_HotKey='%s'", mqplugin::PluginName, g_HotKey);
 					WriteChatf("%s::g_HotKey='%s'", mqplugin::PluginName, g_HotKey);
 				}
@@ -270,8 +261,10 @@ void SetWinTitle(int GameState)
 	}
 	if (!InitialSetupDone)
 		return;
-	if (GameState == GAMESTATE_INGAME) {
-		if (Zoning) {
+	if (GameState == GAMESTATE_INGAME) 
+	{
+		if (Zoning) 
+		{
 			if (KeepOriginalTitle)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_ZoningString);
 			else
@@ -281,8 +274,10 @@ void SetWinTitle(int GameState)
 			else
 				strcpy_s(szWindowTitle, g_OriginalTitle);
 		}
-		else {
-			if (TellRecv && IsBackGround && pEverQuestInfo->LastTellFromList[0][0]) {
+		else 
+		{
+			if (TellRecv && IsBackGround && pEverQuestInfo->LastTellFromList[0][0]) 
+			{
 				if (KeepOriginalTitle)
 					sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_TellString);
 				else
@@ -292,7 +287,8 @@ void SetWinTitle(int GameState)
 				else
 					strcpy_s(szWindowTitle, g_OriginalTitle);
 			}
-			else {
+			else 
+			{
 				TellRecv = false;  // reset TellRecv if toggled to foreground, or in foreground
 				if (KeepOriginalTitle)
 					sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_InGameString);
@@ -305,8 +301,10 @@ void SetWinTitle(int GameState)
 			}
 		}
 	}
-	else if (GameState == GAMESTATE_CHARSELECT) {
-		if (Zoning) {
+	else if (GameState == GAMESTATE_CHARSELECT) 
+	{
+		if (Zoning) 
+		{
 			if (KeepOriginalTitle)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_ZoningString);
 			else
@@ -316,7 +314,8 @@ void SetWinTitle(int GameState)
 			else
 				strcpy_s(szWindowTitle, g_OriginalTitle);
 		}
-		else {
+		else 
+		{
 			if (KeepOriginalTitle)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_OtherString);
 			else
@@ -327,8 +326,10 @@ void SetWinTitle(int GameState)
 				strcpy_s(szWindowTitle, g_OriginalTitle);
 		}
 	}
-	else if (GameState == 2000) {
-		if (g_HotKey[0]) {
+	else if (GameState == 2000) 
+	{
+		if (g_HotKey[0]) 
+		{
 			char szTmp1[MAX_STRING] = { 0 };
 			for (unsigned int x = 0; x < strlen(g_OriginalTitle); x++)
 			{
@@ -356,19 +357,21 @@ void SetWinTitle(int GameState)
 			}
 			::SetWindowTextA(hwnd, g_OriginalTitle);
 		}
-		//SendMessage(hwnd, WM_SETTEXT, NULL, (LPARAM)g_OriginalTitle);
 		return;
 	}
-	else if (g_OriginalTitle[0]) {
+	else if (g_OriginalTitle[0]) 
+	{
 		const char* szLogin = GetLoginName();
-		if (!szLogin) {
+		if (!szLogin) 
+		{
 			strcpy_s(szLoginName, "");
 			if (KeepOriginalTitle)
 				sprintf_s(szWindowTitle, "%s   EverQuest", g_OriginalTitle);
 			else
 				sprintf_s(szWindowTitle, "EverQuest");
 		}
-		else {
+		else 
+		{
 			strcpy_s(szLoginName, szLogin);
 			if (KeepOriginalTitle)
 				sprintf_s(szWindowTitle, "%s   EverQuest (%s)", g_OriginalTitle, szLoginName);
@@ -380,20 +383,19 @@ void SetWinTitle(int GameState)
 		sprintf_s(szTemp, "%s %s", szWindowTitle, g_HotKey);
 	else
 		strcpy_s(szTemp, szWindowTitle);
-	//if(!strcmp(g_LastTitle, szTemp))
-	//	return;
 	strcpy_s(g_LastTitle, szTemp);
 	::SetWindowTextA(hwnd, szTemp);
 	// this will spam, since we're constantly calling this function & not skipping due to wineq2's bs
 	/*
-	if(WTDEBUG) {
+	if(WTDEBUG) 
+	{
 		DebugSpewAlways("%s::SetWindowText(0x%X, \"%s\")", mqplugin::PluginName, hwnd, szTemp);
 		WriteChatf("%s::SetWindowText(0x%X, \"%s\")", mqplugin::PluginName, hwnd, szTemp);
 	}
 	*/
 }
 
-void ReloadConfig(SPAWNINFO* pSpawn, const char* szLine)
+void ReloadConfig()
 {
 	char szTemp[MAX_STRING] = { 0 };
 	GetPrivateProfileString("Settings", "InGame", INGAMESTRING, g_InGameString, MAX_STRING, INIFileName);
@@ -405,11 +407,6 @@ void ReloadConfig(SPAWNINFO* pSpawn, const char* szLine)
 		ShowHotKey = true;
 	else
 		ShowHotKey = false;
-	//GetPrivateProfileString("Settings", "KeepOriginalTitle", "on", szTemp, MAX_STRING, INIFileName);
-	//if(!_stricmp(szTemp, "on"))
-		//KeepOriginalTitle = true;
-	//else
-		//KeepOriginalTitle = false;
 	WriteChatf("\at%s \ay(\agv%1.2f\ay): \atBrought to you by \arhtw \ax- \agConfiguration reloaded.", mqplugin::PluginName, MQ2Version);
 	if (GetGameState() == GAMESTATE_CHARSELECT || GetGameState() == GAMESTATE_INGAME)
 		SetWinTitle(GetGameState());
@@ -417,11 +414,53 @@ void ReloadConfig(SPAWNINFO* pSpawn, const char* szLine)
 		SetWinTitle(1000);
 }
 
-void FixTitleBar(SPAWNINFO* pSpawn, const char* szLine)
+void FixTitleBar(const char* szState)
 {
 	char zParm[MAX_STRING];
-	GetArg(zParm, szLine, 1);
+	GetArg(zParm, szState, 1);
 	SetWinTitle(GetIntFromString(zParm, 0));
+}
+
+void WTHelp()
+{
+	WriteChatf("");
+	WriteChatf("\ayMQ2WinTitle Commands:");
+	WriteChatf("");
+	WriteChatf("\ay/wintitle reload\ax: \agReload configuration from ini file");
+	WriteChatf("\ay/wintitle fixtitle [state]\ax: \agCall function to 'fix' title based on game state");
+	WriteChatf("\ay/wintitle debug [off|on]\ax: \agToggle displaying debugging messages to chat, or force on/off");
+	WriteChatf("\ay/wintitle petdebug [off|on]\ax: \agToggle displaying pet debugging messages to chat, or force on/off");
+	WriteChatf("\ay/wintitle [help] \ax: \agThis help");
+	WriteChatf("");
+}
+
+void WinTitleCmd(SPAWNINFO* pSpawn, const char* szLine)
+{
+	char szArg1[MAX_STRING], szArg2[MAX_STRING];
+	GetArg(szArg1, szLine, 1);
+	if (!_stricmp(szArg1, "load") || !_stricmp(szArg1, "reload")) 
+	{
+		ReloadConfig();
+	}
+	else if (!_stricmp(szArg1, "fix") || !_stricmp(szArg1, "fixtitle")) 
+	{
+		GetArg(szArg2, szLine, 2);
+		FixTitleBar(szArg2);
+	}
+	else if (!_stricmp(szArg1, "debug")) 
+	{
+		GetArg(szArg2, szLine, 2);
+		WTDebug(szArg2);
+	}
+	else if (!_stricmp(szArg1, "petdebug")) 
+	{
+		GetArg(szArg2, szLine, 2);
+		PetDebug(szArg2);
+	}
+	else 
+	{
+		WTHelp();
+	}
 }
 
 PLUGIN_API void InitializePlugin()
@@ -429,10 +468,7 @@ PLUGIN_API void InitializePlugin()
 	char szTemp[MAX_STRING] = { 0 };
 	DebugSpewAlways("Initializing %s", mqplugin::PluginName);
 
-	AddCommand("/winload", ReloadConfig);
-	AddCommand("/fixtitlebar", FixTitleBar);
-	AddCommand("/wtdebug", WTDebug);
-	AddCommand("/petdebug", PetDebug);
+	AddCommand("/wintitle", WinTitleCmd);
 
 	TellRecv = false;
 	IsBackGround = false;
@@ -454,10 +490,7 @@ PLUGIN_API void InitializePlugin()
 PLUGIN_API void ShutdownPlugin()
 {
 	DebugSpewAlways("Shutting down %s", mqplugin::PluginName);
-	RemoveCommand("/winload");
-	RemoveCommand("/fixtitlebar");
-	RemoveCommand("/wtdebug");
-	RemoveCommand("/petdebug");
+	RemoveCommand("/wintitle");
 	if (bBeenInGame && !gbUnload)
 	{
 		SetWinTitle(2000);
@@ -471,12 +504,14 @@ PLUGIN_API void OnPulse()
 	if (GetTickCount64() - TimeStamp < 50LL)
 		return;
 	TimeStamp = GetTickCount64();
-	if (GetForegroundWindow() != EQWnd) {
+	if (GetForegroundWindow() != EQWnd) 
+	{
 		IsBackGround = true;
 		if (bBeenInGame)
 			SetWinTitle(GetGameState());
 	}
-	else {
+	else 
+	{
 		if (bBeenInGame)
 			SetWinTitle(GetGameState());
 		IsBackGround = false;
@@ -530,14 +565,18 @@ PLUGIN_API bool OnIncomingChat(const char* tLine, DWORD Color)
 			unsigned int NewPos = 0;
 			unsigned int OldPos = 0;
 			bool Initial = true;
-			do {
-				if (tLine[OldPos] != 0x12) {
+			do 
+			{
+				if (tLine[OldPos] != 0x12) 
+				{
 					Line[NewPos] = tLine[OldPos];
 					NewPos++;
 					OldPos++;
 				}
-				else {
-					if (Initial) {
+				else 
+				{
+					if (Initial) 
+					{
 						OldPos += 2;
 						Initial = false;
 					}
