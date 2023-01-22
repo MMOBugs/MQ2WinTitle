@@ -1,7 +1,7 @@
 # MQ2WinTitle
 
 Change your EQ window titlebar (caption) text, to display data of your choice. The specific text that is displayed is configurable
-via INI file. The plugin will also indicate, if you wish, if a tell was recieved in a background EQ session, by changing the
+via INI file. The plugin will also indicate, if you wish, if a tell was received in a background EQ session, by changing the
 titlebar to user defined text.
 
 ## Getting Started
@@ -12,7 +12,7 @@ titlebar to user defined text.
 
 ### Commands
 
-MQ2WinTitle provides one command:
+MQ2WinTitle provides one command with several options:
 
 ```
 /wintitle
@@ -29,7 +29,7 @@ MQ2WinTitle provides one command:
 There is one section: `[Settings]`
 
 <span style="color: blue;">InGame</span> <span style="color: green;">The titlebar format to use while in game (not zoning, foreground).</span>  
-<span style="color: blue;">Tell</span> <span style="color: green;">The titlebar format to use if you recieve a tell while EQ is in the background.</span>  
+<span style="color: blue;">Tell</span> <span style="color: green;">The titlebar format to use if you receive a tell while EQ is in the background.</span>  
 <span style="color: blue;">Other</span> <span style="color: green;">The titlebar format to use at other times (such as char select).</span>  
 <span style="color: blue;">Zoning</span> <span style="color: green;">The titlebar format to use while zoning.</span>  
 <span style="color: blue;">ShowHotKey</span> <span style="color: green;">Whether to append the hotkey as shown by WinEQ2 or InnerSpace, if used.</span>  
