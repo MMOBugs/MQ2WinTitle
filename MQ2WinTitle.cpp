@@ -53,7 +53,6 @@ void PetDebug(const char* Cmd)
 void SetWinTitle(int GameState)
 {
 	char szTemp[MAX_STRING] = { 0 };
-	PlayerClient* pPlayer = pLocalPlayer;
 
 	if (GameState != 2000)
 	{
@@ -189,7 +188,7 @@ void SetWinTitle(int GameState)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_ZoningString);
 			else
 				sprintf_s(szWindowTitle, "%s", g_ZoningString);
-			if (pPlayer)
+			if (pLocalPlayer)
 				ParseMacroParameter(szWindowTitle);
 			else
 				strcpy_s(szWindowTitle, g_OriginalTitle);
@@ -202,7 +201,7 @@ void SetWinTitle(int GameState)
 					sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_TellString);
 				else
 					sprintf_s(szWindowTitle, "%s", g_TellString);
-				if (pPlayer)
+				if (pLocalPlayer)
 					ParseMacroParameter(szWindowTitle);
 				else
 					strcpy_s(szWindowTitle, g_OriginalTitle);
@@ -214,7 +213,7 @@ void SetWinTitle(int GameState)
 					sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_InGameString);
 				else
 					sprintf_s(szWindowTitle, "%s", g_InGameString);
-				if (pPlayer)
+				if (pLocalPlayer)
 					ParseMacroParameter(szWindowTitle);
 				else
 					strcpy_s(szWindowTitle, g_OriginalTitle);
@@ -229,7 +228,7 @@ void SetWinTitle(int GameState)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_ZoningString);
 			else
 				sprintf_s(szWindowTitle, "%s", g_ZoningString);
-			if (pPlayer)
+			if (pLocalPlayer)
 				ParseMacroParameter(szWindowTitle);
 			else
 				strcpy_s(szWindowTitle, g_OriginalTitle);
@@ -240,7 +239,7 @@ void SetWinTitle(int GameState)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_OtherString);
 			else
 				sprintf_s(szWindowTitle, "%s", g_OtherString);
-			if (pPlayer)
+			if (pLocalPlayer)
 				ParseMacroParameter(szWindowTitle);
 			else
 				strcpy_s(szWindowTitle, g_OriginalTitle);
