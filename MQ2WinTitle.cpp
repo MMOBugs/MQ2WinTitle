@@ -18,80 +18,6 @@ char szLoginName[MAX_STRING] = { 0 }, zCharName[MAX_STRING] = { 0 }, szServerNam
 ULONGLONG TimeStamp = 0LL, InGameTimeStamp = 0LL;
 HWND EQWnd = nullptr;
 
-BOOL CALLBACK EnumWndProc(HWND hWnd, LPARAM lParam)
-{
-	if (::IsWindowVisible(hWnd))
-	{
-		char szWnd[256] = "";
-		::GetWindowTextA(hWnd, szWnd, 255);
-		DWORD wndPid = 0;
-		GetWindowThreadProcessId(hWnd, &wndPid);
-		if (szWnd[0])
-		{
-			if (wndPid == (DWORD)lParam) 
-			{
-				EQWnd = hWnd;
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-HWND GetHwndFromPID(DWORD dwProcessId)
-{
-	DWORD pid = 0, dwThreadID = 0;
-	HWND h;
-	EQWnd = NULL;
-	__try 
-	{
-		EnumWindows(EnumWndProc, dwProcessId);
-	}
-	__except (EXCEPTION_EXECUTE_HANDLER) 
-	{
-	}
-	if (WTDEBUG) 
-	{
-		if (EQWnd) 
-		{
-			DebugSpewAlways("%s::EQ Window found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, EQWnd);
-			WriteChatf("%s::EQ Window found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, EQWnd);
-		}
-		else 
-		{
-			DebugSpewAlways("%s::EQ Window not found for PID %d", mqplugin::PluginName, dwProcessId);
-			WriteChatf("%s::EQ Window found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, EQWnd);
-		}
-	}
-	if (EQWnd) 
-	{
-		h = ::GetTopWindow(nullptr);
-		while (h)
-		{
-			dwThreadID = ::GetWindowThreadProcessId(h, &pid);
-			if (pid == dwProcessId)
-			{
-				break;
-			}
-			h = ::GetNextWindow(h, GW_HWNDNEXT);
-		}
-		if (WTDEBUG) 
-		{
-			if (dwThreadID) 
-			{
-				DebugSpewAlways("%s::Thread found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, dwThreadID);
-				WriteChatf("%s::Thread found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, dwThreadID);
-			}
-			else 
-			{
-				DebugSpewAlways("%s::Thread not found for PID %d", mqplugin::PluginName, dwProcessId);
-				WriteChatf("%s::Thread found for PID %d: 0x%X", mqplugin::PluginName, dwProcessId, dwThreadID);
-			}
-		}
-	}
-	return(EQWnd);
-}
-
 void WTDebug(const char* Cmd)
 {
 	char zParm[MAX_STRING];
@@ -127,11 +53,9 @@ void PetDebug(const char* Cmd)
 void SetWinTitle(int GameState)
 {
 	char szTemp[MAX_STRING] = { 0 };
-	PSPAWNINFO szSpawn = nullptr;
-	PCHARINFO pCharInfo = GetCharInfo();
-	if (pCharInfo)
-		szSpawn = GetCharInfo()->pSpawn;
-	if (GameState != 2000) 
+	PlayerClient* pPlayer = pLocalPlayer;
+
+	if (GameState != 2000)
 	{
 		if (!Init) 
 		{
@@ -157,11 +81,7 @@ void SetWinTitle(int GameState)
 		}
 	}
 
-	HWND hwnd = nullptr;
-	if (!EQWnd)
-		hwnd = GetHwndFromPID(GetCurrentProcessId());
-	else
-		hwnd = EQWnd;
+	HWND hwnd = EQWnd ? EQWnd : GetEQWindowHandle();
 
 	if (!hwnd) 
 	{
@@ -269,8 +189,8 @@ void SetWinTitle(int GameState)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_ZoningString);
 			else
 				sprintf_s(szWindowTitle, "%s", g_ZoningString);
-			if (szSpawn)
-				ParseMacroParameter(szSpawn, szWindowTitle);
+			if (pPlayer)
+				ParseMacroParameter(szWindowTitle);
 			else
 				strcpy_s(szWindowTitle, g_OriginalTitle);
 		}
@@ -282,8 +202,8 @@ void SetWinTitle(int GameState)
 					sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_TellString);
 				else
 					sprintf_s(szWindowTitle, "%s", g_TellString);
-				if (szSpawn)
-					ParseMacroParameter(szSpawn, szWindowTitle);
+				if (pPlayer)
+					ParseMacroParameter(szWindowTitle);
 				else
 					strcpy_s(szWindowTitle, g_OriginalTitle);
 			}
@@ -294,8 +214,8 @@ void SetWinTitle(int GameState)
 					sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_InGameString);
 				else
 					sprintf_s(szWindowTitle, "%s", g_InGameString);
-				if (szSpawn)
-					ParseMacroParameter(szSpawn, szWindowTitle);
+				if (pPlayer)
+					ParseMacroParameter(szWindowTitle);
 				else
 					strcpy_s(szWindowTitle, g_OriginalTitle);
 			}
@@ -309,8 +229,8 @@ void SetWinTitle(int GameState)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_ZoningString);
 			else
 				sprintf_s(szWindowTitle, "%s", g_ZoningString);
-			if (szSpawn)
-				ParseMacroParameter(szSpawn, szWindowTitle);
+			if (pPlayer)
+				ParseMacroParameter(szWindowTitle);
 			else
 				strcpy_s(szWindowTitle, g_OriginalTitle);
 		}
@@ -320,8 +240,8 @@ void SetWinTitle(int GameState)
 				sprintf_s(szWindowTitle, "%s %s", g_OriginalTitle, g_OtherString);
 			else
 				sprintf_s(szWindowTitle, "%s", g_OtherString);
-			if (szSpawn)
-				ParseMacroParameter(szSpawn, szWindowTitle);
+			if (pPlayer)
+				ParseMacroParameter(szWindowTitle);
 			else
 				strcpy_s(szWindowTitle, g_OriginalTitle);
 		}
